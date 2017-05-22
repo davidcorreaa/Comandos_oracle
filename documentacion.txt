@@ -4,8 +4,8 @@
 
 CREATE TABLESPACE nombre_tablespace 
 datafile 
-'nombre_datafile.dbf' size tamaño_en_K| M| G| T| P| E; --sin posibilidad de extender el datafile
-'nombre_datafile.dbf' size tamaño_en_K| M| G| T| P| E;  AUTOEXTEND ON NEXT 10M MAXSIZE 200M; --con posibilidad de extender el datafile
+'nombre_datafile.dbf' size tamaÃ±o_en_K| M| G| T| P| E; --sin posibilidad de extender el datafile
+'nombre_datafile.dbf' size tamaÃ±o_en_K| M| G| T| P| E;  AUTOEXTEND ON NEXT 10M MAXSIZE 200M; --con posibilidad de extender el datafile
 
 --------------------------------------
 --Creacion usuarios, roles, perfiles--
@@ -13,14 +13,14 @@ datafile
 
 --Usuarios
 CREATE USER nombre_usuario
-  IDENTIFIED BY contraseña
+  IDENTIFIED BY contraseÃ±a
   --los dos anteriores son los unicos campos obligatorios los siguientes son opcionales
   DEFAULT TABLESPACE nombre_tablespace
   TEMPORARY TABLESPACE nombre_tablespace
-  QUOTA tamaño K| M| G| T| P| E| UNLIMITED 
+  QUOTA tamaÃ±o K| M| G| T| P| E| UNLIMITED 
         ON nombre_tabla
   PROFILE nombre_perfil
-  PASSWORD EXPIRE tiempo_de_expiracion_contraseña
+  PASSWORD EXPIRE tiempo_de_expiracion_contraseÃ±a
   ACCOUNT LOCK,UNLOCK;
 
 --Perfiles
@@ -37,7 +37,7 @@ failed_login_attempts #
 
 --roles
 CREATE ROLE nombre_rol
-IDENTIFIED BY contraseña  USING esquema. package EXTERNALLY|GLOBALLY; --completamente opcional
+IDENTIFIED BY contraseÃ±a  USING esquema. package EXTERNALLY|GLOBALLY; --completamente opcional
 
 --para dar permisos a roles
 GRANT nombre_privilegio TO nombre_rol;
@@ -52,7 +52,7 @@ GRANT nombre_privilegio|nombre_rol TO nombre_usuario;
 ---------------------------------------------------------
 
 CREATE TABLE nombre_clase(
-nombre_campo tipo_de_campo NOT NULL, --tipo de campo en caso de ser numerico integer en caso de ser texto varchar(tamaño)
+nombre_campo tipo_de_campo NOT NULL, --tipo de campo en caso de ser numerico integer en caso de ser texto varchar(tamaÃ±o)
 nombre_campo tipo_de_campo NOT NULL, --Separar cada instruccion menos la final por comas
 CONSTRAINT PK_nombre_restriccion PRIMARY KEY(nombre_campo), --asignando clave primaria
 CONSTRAINT FK_nombre_restriccion FOREIGN KEY (nombre_campo) REFERENCES nombre_tabla(nombre_campo_en_table) --asignando clave foranea
@@ -103,13 +103,15 @@ GRANT SELECT ON nombre_vista TO nombre_usuario;
 
 --Secuencia de instrucciones logicas que siempre devuelve un valor (principal diferencia con los procedimientos)
 
-CREATE OR REPLACE FUNCTION assign_name (parametros) --en caso de no haber parametros solo copiar el nombre sin parentesis
+CREATE OR REPLACE FUNCTION assign_name (parametros in tipo_variable) --en caso de no haber parametros solo copiar el nombre sin parentesis
 RETURN tipo_retorno AS
-   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaÃ±o) para numero copiar number := valor_inicial;
 BEGIN
    RETURN variable_a_retornar; --para retornar la variable, solo el retornar variable del mismo tipo del definido en return linea 2
 EXCEPTION --en caso de trabajar con excepciones
-   WHEN nombre_excepcion ...
+  WHEN nombre_excepcion then
+  --instrucciones
+  return variable_a_retornar
 END;
 
 --Para ejecutar la funcion
@@ -130,7 +132,7 @@ GRANT EXECUTE ON nombre_funcion TO nombre_usuario;
 No devuelven valores, pero se puede pedir el retorno usandondo out o in out*/
 
 CREATE OR REPLACE PROCEDURE nombre_procedimiento (parametros) AS  --en caso de no haber parametros solo copiar el nombre sin parentesis
- nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+ nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaÃ±o) para numero copiar number := valor_inicial;
 BEGIN
  --Introducir aca las instrucciones
 EXCEPTION --en caso de trabajar con excepciones
@@ -166,7 +168,7 @@ AFTER DELETE -- Despues de borrar
 
 DECLARE --opcional
    -- Declaracion de variables
-   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaÃ±o) para numero copiar number := valor_inicial;
 BEGIN
    -- instrucciones
 
