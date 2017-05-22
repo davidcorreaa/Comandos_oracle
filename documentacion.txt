@@ -1,0 +1,176 @@
+------------------------
+--Creacion tablespaces--
+------------------------
+
+CREATE TABLESPACE nombre_tablespace 
+datafile 
+'nombre_datafile.dbf' size tamaño_en_K| M| G| T| P| E; --sin posibilidad de extender el datafile
+'nombre_datafile.dbf' size tamaño_en_K| M| G| T| P| E;  AUTOEXTEND ON NEXT 10M MAXSIZE 200M; --con posibilidad de extender el datafile
+
+--------------------------------------
+--Creacion usuarios, roles, perfiles--
+--------------------------------------
+
+--Usuarios
+CREATE USER nombre_usuario
+  IDENTIFIED BY contraseña
+  --los dos anteriores son los unicos campos obligatorios los siguientes son opcionales
+  DEFAULT TABLESPACE nombre_tablespace
+  TEMPORARY TABLESPACE nombre_tablespace
+  QUOTA tamaño K| M| G| T| P| E| UNLIMITED 
+        ON nombre_tabla
+  PROFILE nombre_perfil
+  PASSWORD EXPIRE tiempo_de_expiracion_contraseña
+  ACCOUNT LOCK,UNLOCK;
+
+--Perfiles
+create profile nombre_perfil limit
+cpu_per_session #
+cpu_per_call #
+connect_time #
+sessions_per_user #
+idle_time #
+password_life_time #
+failed_login_attempts #
+...
+;
+
+--roles
+CREATE ROLE nombre_rol
+IDENTIFIED BY contraseña  USING esquema. package EXTERNALLY|GLOBALLY; --completamente opcional
+
+--para dar permisos a roles
+GRANT nombre_privilegio TO nombre_rol;
+
+--para dar perfiles y roles
+
+GRANT nombre_privilegio|nombre_rol TO nombre_usuario;
+
+
+---------------------------------------------------------
+--Creacion de tablas, claves primarias, claves foraneas--
+---------------------------------------------------------
+
+CREATE TABLE nombre_clase(
+nombre_campo tipo_de_campo NOT NULL, --tipo de campo en caso de ser numerico integer en caso de ser texto varchar(tamaño)
+nombre_campo tipo_de_campo NOT NULL, --Separar cada instruccion menos la final por comas
+CONSTRAINT PK_nombre_restriccion PRIMARY KEY(nombre_campo), --asignando clave primaria
+CONSTRAINT FK_nombre_restriccion FOREIGN KEY (nombre_campo) REFERENCES nombre_tabla(nombre_campo_en_table) --asignando clave foranea
+)
+
+-------------------------------------------------
+--Insertar datos en tablas con y sin secuencias--
+-------------------------------------------------
+
+-- se separan los valores por comas
+
+INSERT INTO nombre_tabla VALUES (nombre_secuencia.nextval,'campo de texto en comillas', numeros_sin_comillas); -- Ingresando con secuencias
+INSERT INTO nombre_tabla VALUES 'campo de texto en comillas', numeros_sin_comillas); -- ingresando sin secuencias
+
+--------------
+--Secuencias--
+--------------
+
+--Secuencias son instrucciones SQL para funcionan como contadores e incrementan o decrementan segun la necesidad del creador
+
+CREATE SEQUENCE nombre_secuencia
+  START WITH numero --En que numero empezara
+  --Solo se puede incrementar o decrementar por secuencia
+  INCREMENT BY numero; --Cada cuanto incrementara
+  INCREMENT BY -numero; --Cada cuanto decrementara
+
+
+----------
+--Vistas--
+----------
+--Recordar que las vistas son simplemente busquedas almacenadas en una base de datos.
+
+CREATE OR REPLACE VIEW nombre_vista AS
+--campo para la consulta
+
+--Para ejecutar la vista
+
+select * from nombre_vista;
+
+--Para otorgar el ejecutar una vista (recordar que solo se puede asociar a usuarios)
+
+GRANT SELECT ON nombre_vista TO nombre_usuario;
+
+
+-------------
+--Funciones--
+-------------
+
+--Secuencia de instrucciones logicas que siempre devuelve un valor (principal diferencia con los procedimientos)
+
+CREATE OR REPLACE FUNCTION assign_name (parametros) --en caso de no haber parametros solo copiar el nombre sin parentesis
+RETURN tipo_retorno AS
+   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+BEGIN
+   RETURN variable_a_retornar; --para retornar la variable, solo el retornar variable del mismo tipo del definido en return linea 2
+EXCEPTION --en caso de trabajar con excepciones
+   WHEN nombre_excepcion ...
+END;
+
+--Para ejecutar la funcion
+
+SELECT nombre_funcion FROM DUAL; --Sin parametros
+SELECT nombre_funcion(parametro) FROM DUAL; --Con parametros
+
+--Para asignar funcion a usuario (recordar que solo se puede asociar a usuarios)
+
+GRANT EXECUTE ON nombre_funcion TO nombre_usuario;
+
+
+-----------------
+--Procedimiento--
+-----------------
+
+/*Conjunto de instrucciones SQL (buscar, insertar, eliminar registros... )que pueden ser ejecutadas de distintas maneras.
+No devuelven valores, pero se puede pedir el retorno usandondo out o in out*/
+
+CREATE OR REPLACE PROCEDURE nombre_procedimiento (parametros) AS  --en caso de no haber parametros solo copiar el nombre sin parentesis
+ nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+BEGIN
+ --Introducir aca las instrucciones
+EXCEPTION --en caso de trabajar con excepciones
+   WHEN nombre_excepcion ...
+END;
+
+--Para llamar procedimientos
+
+begin 
+    nombre_procedimiento; --procedimiento sin parametros
+    nombre_procedimiento(parametros); --procedimiento con parametros
+end;
+
+--Para asignar procedimiento a usuario (recordar que solo se puede asociar a usuarios)
+
+GRANT EXECUTE ON nombre_procedimiento TO nombre_usuario;
+
+------------
+--triggers--
+------------
+
+-Triggers o disparadores son series de instrucciones que se ejecutaran bajo condiciones impuestas (ver abajo para lista de condiciones)
+
+CREATE OR REPLACE TRIGGER nombre_trigger -- la lista de abajo solo se puede seleccionar uno por trigger
+BEFORE INSERT -- Antes de insertar
+AFTER INSERT -- Despues de insertar
+BEFORE UPDATE -- Antes de actualizar
+AFTER UPDATE -- Despues de actualizar
+BEFORE DELETE -- Antes de borrar
+AFTER DELETE -- Despues de borrar
+   ON nombre_de_tabla
+   [ FOR EACH ROW ] --Opcional, indica que se hara por cada registro afectado por la operacion descrita anteriormente
+
+DECLARE --opcional
+   -- Declaracion de variables
+   nombre_variable tipo_variable; -- para varchar solo copiar varchar2(tamaño) para numero copiar number := valor_inicial;
+BEGIN
+   -- instrucciones
+
+EXCEPTION --en caso de trabajar con excepciones
+   WHEN nombre_excepcion ...
+
+END;
