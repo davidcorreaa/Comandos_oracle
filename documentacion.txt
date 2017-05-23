@@ -176,3 +176,16 @@ EXCEPTION --en caso de trabajar con excepciones
    WHEN nombre_excepcion ...
 
 END;
+
+--------------------------------------
+--Algunos comandos a tener en cuenta--
+--------------------------------------
+
+--Dar valor en una variable a partir del dato de una tabla
+SELECT nombre_table INTO nombre_variable FROM nombre_tabla where condicion_where;
+
+--Para elevar a una potencia x: numero a elevar y: potencia
+power(x,y)
+ 
+--Para contar el numero de caracteres
+regexp_count('caracter a ingresar','parametro a ubuscar'));
