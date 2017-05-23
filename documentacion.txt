@@ -199,3 +199,9 @@ AWS:
 Para crear launch dbinstance
  
 amazon web services
+
+Con Amazon Relational Database Service (Amazon RDS), es sencillo configurar, utilizar y escalar una base de datos relacional en la nube. Proporciona capacidad rentable y de tamaño modificable y, al mismo tiempo, administra las tediosas tareas de administración de la base de datos, lo que le permite centrarse en sus aplicaciones y en su negocio. Amazon RDS le proporciona seis motores de bases de datos populares para elegir, incluido Amazon Aurora, PostgreSQL, MySQL, MariaDB, Oracle y Microsoft SQL Server.
+
+
+
+
