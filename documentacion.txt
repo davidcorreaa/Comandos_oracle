@@ -189,3 +189,13 @@ power(x,y)
  
 --Para contar el numero de caracteres
 regexp_count('caracter a ingresar','parametro a ubuscar'));
+
+
+------------------------AWS------------------------
+
+AWS:
+- RDS: relational database services.
+- dbinstances: cuantas instancias de bd estan creadas
+Para crear launch dbinstance
+ 
+amazon web services
