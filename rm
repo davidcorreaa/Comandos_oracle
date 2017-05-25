@@ -1,0 +1,132 @@
+SHOW ALL;
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 7 DAYS;
+
+BACKUP AS BACKUPSET
+
+#without archive logs
+BACKUP AS BACKUPSET DATABASE
+#with archive logs
+BACKUP AS BACKUPSET DATABASE PLUS ARCHIVELOG;
+
+#SPECIFIC TABLESPACE
+BACKUP AS BACKUPSET TABLESPACE PRD01;
+
+#WITH TAGS
+BACKUP AS BACKUPSET TAG 'WEEEKLY_PRD01_TBLS_BK_ONLY' TABLESPACE PRD01;
+BACKUP AS COMPRESSED BACKUPSET TAG 'WEEEKLY_PRD01_TBLS_BK_ONLY' TABLESPACE PRD01;
+
+LIST BACKUP;
+
+#INCREMENTAL
+BACKUP INCREMENTAL LEVEL 0 DATABASE;
+BACKUP INCREMENTAL LEVEL 1 CUMULATIVE DATABASE; #cumulative incremental backup
+
+
+#cold backup
+delete obsolete archivelog all;
+delete archivelog all;
+DELETE BACKUP;
+run 
+{
+  shutdown immediate
+  startup mount
+  BACKUP AS BACKUPSET DATABASE PLUS ARCHIVELOG;
+}
+
+ backup database;
+ shutdown abort;
+
+ remove files ls -lah /u01/app/oracle/oradata/XE/
+ ls -lah /u01/app/oracle/fast_recovery_area/XE/backupset
+
+
+RECOVER 
+
+ startup nomount; //Normal mode
+
+ #restore controlfile from "/u01/app/oracle/fast_recovery_area/XE/backupset/2017_05_03/o1_mf_nnndf_TAG20170503T211855_djnlb05k_.bkp";
+ #restore controlfile from tag 'TAG20170426T230943';
+ #restore controlfile from autobackup;
+
+ RESTORE DATABASE;
+ 1. startup nomount
+ 2. restore database;
+ 3. alter database mount;
+
+Recover Database (and ResetLogs)
+ 
+ recover database;
+ alter database open resetlogs;
+
+ #DELETE OBSOLETE;
+
+ Recovering Tablespaces
+RESTORE TABLESPACE dev1;
+RESTORE TABLESPACE dev1, dev2;
+RESTORE DATAFILE '/u01/oradata/devdb/dev1_01.dbf'
+
+ SQL 'ALTER TABLESPACE users OFFLINE';
+ RUN
+{
+  SET NEWNAME FOR DATAFILE '/disk1/oradata/prod/users01.dbf' 
+    TO '/disk2/users01.dbf';
+  RESTORE TABLESPACE users;
+  SWITCH DATAFILE ALL;   # update control file with new file names
+  RECOVER TABLESPACE users;
+}
+SQL 'ALTER TABLESPACE users ONLINE';
+
+/usr/sbin/startup.sh && /usr/sbin/sshd -D
+
+
+
+BACKUP
+
+CREATE TABLESPACE SALES datafile 
+'/u01/app/oracle/oradata/XE/sales1.dbf' size 100M,
+'/u01/app/oracle/oradata/XE/sales2.dbf' size 50M
+AUTOEXTEND ON NEXT 500K MAXSIZE 400M
+EXTENT MANAGEMENT LOCAL
+SEGMENT SPACE MANAGEMENT AUTO
+ONLINE;
+
+ALTER TABLESPACE SALES ONLINE;
+
+SELECT TABLESPACE_NAME,FILE_NAME,ONLINE_STATUS   --Para verificar
+FROM DBA_DATA_FILES
+WHERE TABLESPACE_NAME='SALES';
+
+ssh root@localhost -p 49160
+set oracle_sid=xe
+rman TARGET SYS/
+
+LIST BACKUP;
+SHOW ALL;
+
+run 
+{
+  shutdown immediate
+  startup mount
+  BACKUP AS BACKUPSET DATABASE PLUS ARCHIVELOG;
+}
+
+
+rm /u01/app/oracle/oradata/XE/sales1.dbf 
+rm /u01/app/oracle/oradata/XE/sales2.dbf
+ll /u01/app/oracle/oradata/XE
+
+RECOVER
+
+rman TARGET SYS/
+
+STARTUP NOMOUNT;
+STARTUP MOUNT;
+ LIST BACKUP;
+RESTORE TABLESPACE SALES;
+
+run 
+{
+  shutdown immediate;
+}
+
+/usr/sbin/startup.sh && /usr/sbin/sshd -D
