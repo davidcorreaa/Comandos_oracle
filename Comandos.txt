@@ -1,3 +1,33 @@
+CREATE OR REPLACE FUNCTION findsum (num_in in string) 
+RETURN string AS
+   counter_to_num number:=1; 
+   message string(4000):='(';
+   --message_out string(4000); --Please ignore this one i was just seeing if i could put the whole example together like "8"(3+5) 
+   added_value number:=0;
+   not_in_range EXCEPTION;
+BEGIN
+if (num_in<=0) or (num_in>99999) then
+raise not_in_range;
+end if;
+WHILE counter_to_num<=num_in
+LOOP  
+   if MOD(counter_to_num,3)=0 or  MOD(counter_to_num,5)=0 then
+   --message:=message||counter_to_num||'+'; --Here's where I did the part of the output (3+5+
+   added_value:=added_value+counter_to_num;
+   end if;
+   counter_to_num:=counter_to_num+1;   
+END LOOP;
+  --message:=substr(message,1,LENGTH(message)-1); -- Here I erased the las +
+  --message:=message||')'; --Here I added the final )
+  --message_out:='"'||added_value||'"'||message; --And here I printed the sum plus the numbers used in the sum
+  message:=added_value;
+   --RETURN message_out; --Here I returned the WHOLE "8"(3+5)
+   return message;
+EXCEPTION
+   WHEN not_in_range THEN
+   Dbms_Output.Put_Line('Not a valid value, please insert number between 1 and 99999'); 
+END;
+
 CREATE TABLESPACE vehicles_fleet 
 datafile 'DTF_one.dbf' size 500M,
 'DTF_two.dbf' size 500M;
