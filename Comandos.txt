@@ -1,14 +1,36 @@
+CREATE OR REPLACE FUNCTION findsum (num_in in string) 
+RETURN string AS
+   counter_to_num number:=1; 
+   message string(4000):='(';
+   --message_out string(4000); --Please ignore this one i was just seeing if i could put the whole example together like "8"(3+5) 
+   added_value number:=0;
+   not_in_range EXCEPTION;
+BEGIN
+if (num_in<=0) or (num_in>99999) then
+raise not_in_range;
+end if;
+WHILE counter_to_num<=num_in
+LOOP  
+   if MOD(counter_to_num,3)=0 or  MOD(counter_to_num,5)=0 then
+   --message:=message||counter_to_num||'+'; --Here's where I did the part of the output (3+5+
+   added_value:=added_value+counter_to_num;
+   end if;
+   counter_to_num:=counter_to_num+1;   
+END LOOP;
+  --message:=substr(message,1,LENGTH(message)-1); -- Here I erased the las +
+  --message:=message||')'; --Here I added the final )
+  --message_out:='"'||added_value||'"'||message; --And here I printed the sum plus the numbers used in the sum
+  message:=added_value;
+   --RETURN message_out; --Here I returned the WHOLE "8"(3+5)
+   return message;
+EXCEPTION
+   WHEN not_in_range THEN
+   Dbms_Output.Put_Line('Not a valid value, please insert number between 1 and 99999'); 
+END;
+
 CREATE TABLESPACE vehicles_fleet 
 datafile 'DTF_one.dbf' size 500M,
 'DTF_two.dbf' size 500M;
-
-CREATE TABLESPACE test_purposes 
-datafile 'DTF_3.dbf' size 500M;
-
-CREATE UNDO TABLESPACE  vehicles 
-datafile 'DTFUNDO_4.dbf' SIZE 5M;
-
-ALTER SYSTEM SET UNDO_TABLESPACE = vehicles;
 
 CREATE USER USUARIODBA
 identified by DBA123
@@ -24,195 +46,10 @@ idle_time 15
 password_life_time 40
 failed_login_attempts 4;
 
-create profile finance_profile limit
-sessions_per_user 1
-idle_time 5
-password_life_time 15
-failed_login_attempts 2;
-
-create profile service_profile limit
-sessions_per_user 1
-idle_time 10
-password_life_time 20
-failed_login_attempts 3;
-
-create profile development limit
-sessions_per_user 2
-idle_time 30
-password_life_time 100
-failed_login_attempts UNLIMITED;
-
 CREATE ROLE without_privileges1;
 
 GRANT CREATE session TO without_privileges1;
 
-REVOKE ALL FROM without_privileges1; 
-
-CREATE USER first_user
-identified by usuario1
-default tablespace vehicles_fleet 
-profile manager_profile;
-
-CREATE USER second_user
-identified by usuario2
-default tablespace vehicles_fleet
-profile finance_profile;
-
-CREATE USER third_user
-identified by usuario3
-default tablespace vehicles_fleet
-profile service_profile;
-
-CREATE USER forth_user
-identified by usuario4
-default tablespace vehicles_fleet; 
-
-grant create session to first_user;
-grant create session to second_user;
-grant create session to third_user;
-grant create session to forth_user;
-
-GRANT without_privileges TO first_user;
-GRANT without_privileges TO second_user;
-GRANT without_privileges TO third_user;
-
-ALTER USER first_user ACCOUNT LOCK;
-ALTER USER second_user ACCOUNT LOCK;
-ALTER USER third_user ACCOUNT LOCK;
-
-DROP TABLESPACE test_purposes
-Contact GitHub 
-
-/*Creando un tablespace*/
-
-create tablespace nombre datafile  
-'nombre.dbf' size 1g/m/k autoextend on next 1g/m/k maxsize 1g/m/k,
-'nombre.dbf' size 1g/m/k autoextend on next 1g/m/k maxsize 1g/m/k;
-extent managment local
-segment space managment auto
-online;
-
-/*Creando usuarios*/
-
-create user nombre
-identified by contraseña
-default tablespace nombretabla
-temporary tablespace nombretabla
-quota 1k/m/g unlimited on nombretable
-profile nomperfil
-password expire tiempo
-account lock/unlock
-
-/*Privilegios*/
-
-grant privilegio1, privilegio2.... on tabla.fila/usuario/bd to usuario
-grant privilegio1, privilegio2.... to usuario
-
-/*roles minimo 1*/
-
-create role nombre
-identified by contraseña
-
-grant privilegios on tabla.fila/usuario/bd to nombrerole
-grant privilegios to nombrerole
-
-grant nombrerole to nombreusuario
-
-/*profiles solo 1*/
-
-create profile nombre limit
-sessions_per_user #
-cpu_per_session #
-cpu_per_call #
-connect_time #
-idle_time #
-private_sga #m
-failed_login_attemps #
-password_life_time #
-password_reuse_max #
-password_reuse_time #
-password_grace_time #
-password_lock_time #
-
-/*Usando los explain plan*/
-
-create table test_case (
-
-  col_pk    integer        not null,
-
-  col_i1    integer        not null,
-
-  col_d1    date           not null,
-
-  col_c1    varchar2(100)  not null,
-
-  col_i2    integer        not null,
-
-  col_d2    date           not null,
-
-  col_c2    varchar2(100)  not null
-
-);
-
-
-create or replace function repeat (c char, n integer) return varchar
-
-is
-
-s varchar2(100) := '';
-
-begin
-
-  for i in 1 .. n loop
-
-    s := s || c;
-
-  end loop;
-
-  return (s);
-
-end;
-
-declare
-
-row_count integer := 1000000;
-
-begin
-
-  for i in 1 .. row_count loop
-
-    insert into test_case
-
-      values (i, mod(i,100), sysdate-mod(i,100),
-
-              repeat(substr('ABCDEFGHIJ',mod(i,10),1),10),
-
-              mod(i,100), sysdate-mod(i,100),
-
-              repeat(substr('ABCDEFGHIJ',mod(i,10),1),10)
-
-             );
-
-    if (mod(i,100) = 0) then
-
-      commit;
-
-    end if;
-
-  end loop;
-
-end;
-
-select count(*) from test_case
-select * from test_case
-
-exec DBMS_STATS.GATHER_TABLE_STATS (ownname => user,tabname => 'TEST_CASE', method_opt => 'FOR ALL INDEXED COLUMNS SIZE SKEWONLY');
-
-EXPLAIN PLAN SET STATEMENT_ID = 'bad1' FOR select * from test_case where col_d2 = (select min(col_d2) from test_case where col_pk <= 1000 or col_pk > 990000)
-
-select * from PLAN_TABLE
-
-  
 create unique index test_case_i1 on test_case (col_pk);
 create        index test_case_i2 on test_case (col_i1);
 create        index test_case_i3 on test_case (col_d1);
@@ -223,7 +60,84 @@ drop index test_case_i2;
 drop index test_case_i3;
 drop index test_case_i4;
 
+CREATE TABLE insurance_claims(
+id_numberClaims INTEGER NOT NULL,
+id_vehiclesc INTEGER NOT NULL,
+loss_date DATE NOT NULL,
+date_of_issue DATE NOT NULL,
+nature_of_payment VARCHAR(100) NOT NULL,
+daamges VARCHAR(100) NOT NULL,
+CONSTRAINT PK_insurance_claims PRIMARY KEY(id_numberClaims),
+CONSTRAINT FK_vehicles_claims FOREIGN KEY (id_vehiclesc) REFERENCES vehicles(id_vehicle)
+)
 
-SELECT * FROM TABLE (DBMS_XPLAN.DISPLAY('PLAN_TABLE', 'bad1', 'BASIC +note') );
-SELECT * FROM TABLE (DBMS_XPLAN.DISPLAY('PLAN_TABLE', 'bad1', 'TYPICAL ') );
-SELECT * FROM TABLE (DBMS_XPLAN.DISPLAY('PLAN_TABLE', 'bad1', 'ALL') );
+create or replace view ejemplo2 as
+select vehicles.id_vehicle as codigo, vehicles.plate as registro, vehicles.status as estado, type_of_vehicles.description as tipo from
+vehicles, type_of_vehicles where vehicles.id_vehicle = 1 and type_of_vehicles.id_type  = vehicles.id_type;
+
+select * from ejemplo2;
+
+GRANT SELECT ON seeing_details TO second_user;
+
+BEGIN
+dbms_output.put_line('El numero de letras es:  '|| 
+regexp_count('baldosa','a'));
+
+dbms_output.put_line(regexp_count(11232341,1));
+
+dbms_output.put_line(2**2);
+dbms_output.put_line(POWER( 3, 2));
+END;
+
+
+CREATE OR REPLACE FUNCTION  my_function 
+RETURN number IS 
+ a NUMBER(2) :=0;
+BEGIN
+a := 10/0;
+
+RETURN a;
+EXCEPTION
+WHEN ZERO_DIVIDE THEN 
+dbms_output.put_line('NO SE PUEDE');
+return 0;
+END;
+
+EXEC dbms_output.put_line(my_function);
+
+create or replace function mat_sum 
+return number as
+num_rep number :=100;
+resul number:=0;
+begin
+for i in 1.. num_rep loop
+resul := resul + (2/power(3,i));
+end loop;
+return resul;
+end;
+
+SELECT mat_sum FROM DUAL;
+
+CREATE OR REPLACE PROCEDURE decrease_mileage AS
+	counter_success number :=0;
+BEGIN
+	UPDATE vehicles SET mileage = (mileage*0.98) 
+  WHERE id_type  IN (1, 2, 3);
+	counter_success := sql%rowcount;
+
+	UPDATE vehicles SET mileage = (mileage*0.97) 
+  WHERE id_type  IN (4, 5, 6, 7);
+	counter_success := counter_success + sql%rowcount;
+
+	UPDATE vehicles SET mileage = (mileage*0.95) 
+  WHERE id_type  IN (8, 9);
+	counter_success := counter_success + sql%rowcount;
+
+dbms_output.put_line('there were updated: ' || decrease_mileage || 'registers');
+
+END;
+
+
+BEGIN decrease_mileage ; END;
+
+GRANT EXECUTE ON decrease_mileage TO first_user;
